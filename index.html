@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Webhook Spammer</title>
+    <!-- Discord Embed Settings -->
+    <meta property="og:title" content="Webhook Spammer" />
+    <meta property="og:description" content="Advanced Webhook Sending Tool" />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#0099ff" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --soft-pink: #f5d5e3;
+            --light-pink: #fce4ec;
+            --accent-pink: #f48fb1;
+            --dark-text: #5a5a5a;
+            --light-bg: #fafafa;
+            --white-bg: #ffffff;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        @keyframes softGlow {
+            0%, 100% {
+                text-shadow: 0 2px 8px rgba(244, 143, 177, 0.2);
+            }
+            50% {
+                text-shadow: 0 2px 12px rgba(244, 143, 177, 0.3);
+            }
+        }
+
+        @keyframes softBorder {
+            0%, 100% {
+                border-color: var(--accent-pink);
+                box-shadow: 0 4px 15px rgba(244, 143, 177, 0.15),
+                           inset 0 0 15px rgba(244, 143, 177, 0.05);
+            }
+            50% {
+                border-color: #f5d5e3;
+                box-shadow: 0 4px 20px rgba(244, 143, 177, 0.2),
+                           inset 0 0 15px rgba(244, 143, 177, 0.1);
+            }
+        }
+
+        @keyframes focusSoft {
+            0% {
+                box-shadow: 0 0 8px rgba(244, 143, 177, 0.2),
+                           inset 0 0 5px rgba(244, 143, 177, 0.05);
+            }
+            100% {
+                box-shadow: 0 0 15px rgba(244, 143, 177, 0.3),
+                           inset 0 0 10px rgba(244, 143, 177, 0.1);
+            }
+        }
+
+        @keyframes sakuraFall {
+            0% {
+                transform: translateX(0) translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-400px) translateY(800px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes sakuraFloat {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(-30px);
+            }
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--dark-text);
+            background: linear-gradient(135deg, var(--light-bg) 0%, var(--light-pink) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+            padding-top: 40px;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 80% 20%, rgba(245, 213, 227, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(252, 228, 236, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .discord-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--white-bg);
+            color: var(--accent-pink);
+            border: 2px solid var(--accent-pink);
+            border-radius: 8px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(244, 143, 177, 0.2);
+            font-size: 0.85rem;
+        }
+        
+        .discord-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(244, 143, 177, 0.3);
+            background: var(--soft-pink);
+        }
+        
+        .discord-button svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .container {
+            background: var(--white-bg);
+            border: 2px solid var(--accent-pink);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(244, 143, 177, 0.15);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out,
+                      softBorder 4s ease-in-out infinite;
+            z-index: 10;
+            margin-bottom: 40px;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-pink), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: var(--accent-pink);
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2rem;
+            letter-spacing: 0.5px;
+            animation: fadeIn 1s ease-out,
+                      softGlow 2s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--accent-pink);
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 30px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .form-group {
+            margin-bottom: 22px;
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-group:nth-child(1) { animation-delay: 0.2s; }
+        .form-group:nth-child(2) { animation-delay: 0.3s; }
+        .form-group:nth-child(3) { animation-delay: 0.4s; }
+        .form-group:nth-child(4) { animation-delay: 0.5s; }
+        .form-group:nth-child(5) { animation-delay: 0.6s; }
+        .form-group:nth-child(6) { animation-delay: 0.7s; }
+        .form-group:nth-child(7) { animation-delay: 0.8s; }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            color: var(--accent-pink);
+            font-size: 0.9rem;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e8b4d0;
+            background: var(--light-pink);
+            color: var(--dark-text);
+            font-family: 'Inter', sans-serif;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(244, 143, 177, 0.1);
+        }
+
+        input[type="text"]::placeholder,
+        input[type="number"]::placeholder,
+        textarea::placeholder {
+            color: rgba(90, 90, 90, 0.4);
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            animation: focusSoft 0.5s ease-out forwards;
+            border-color: var(--accent-pink);
+            background: var(--white-bg);
+        }
+
+        textarea {
+            resize: vertical;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            padding-right: 40px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f48fb1' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 40px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 0.6s ease-out 0.8s forwards;
+            opacity: 0;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: 2px solid var(--accent-pink);
+            background: var(--white-bg);
+            color: var(--accent-pink);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(244, 143, 177, 0.15);
+            border-radius: 8px;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            left: -100%;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--accent-pink);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+        
+        button:hover {
+            color: var(--white-bg);
+            box-shadow: 0 6px 20px rgba(244, 143, 177, 0.25);
+        }
+
+        button:hover::before {
+            left: 0;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: 0 2px 8px rgba(244, 143, 177, 0.1);
+        }
+
+        button:disabled:hover {
+            border-color: var(--accent-pink);
+            color: var(--accent-pink);
+            box-shadow: 0 2px 8px rgba(244, 143, 177, 0.1);
+        }
+        
+        #logs {
+            background: var(--light-pink);
+            border: 1px solid #e8b4d0;
+            border-radius: 8px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            box-shadow: inset 0 2px 8px rgba(244, 143, 177, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        #logs div {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(244, 143, 177, 0.2);
+            line-height: 1.4;
+            word-break: break-all;
+        }
+
+        #logs div:last-child {
+            border-bottom: none;
+        }
+        
+        #logs .success {
+            color: #4caf50;
+        }
+
+        #logs .error {
+            color: #f48fb1;
+        }
+
+        #logs .info {
+            color: var(--accent-pink);
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(245, 213, 227, 0.3);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-pink);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f48fb1;
+        }
+
+        .format-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .format-option {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e8b4d0;
+            background: var(--light-pink);
+            color: var(--accent-pink);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .format-option.active {
+            background: var(--accent-pink);
+            color: var(--white-bg);
+            box-shadow: 0 4px 12px rgba(244, 143, 177, 0.3);
+        }
+
+        .row-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .row-group.full {
+            grid-template-columns: 1fr;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            label {
+                font-size: 0.7rem;
+            }
+
+            button {
+                font-size: 0.75rem;
+                padding: 10px;
+            }
+
+            .row-group {
+                grid-template-columns: 1fr;
+            }
+
+            .format-option {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="https://discord.gg/8HK7AQ6WQt" target="_blank" class="discord-button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36" fill="currentColor">
+            <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+        </svg>
+        Discord
+    </a>
+    
+    <div class="container">
+        <h1>Webhook Sender</h1>
+        <div class="subtitle">≡ Advanced Webhook Tool ≡</div>
+        
+        <!-- Webhooks Section -->
+        <div class="form-group">
+            <label for="webhookInput">Webhooks (改行区切り):</label>
+            <textarea id="webhookInput" rows="5" placeholder="https://discord.com/api/webhooks/...&#10;https://discord.com/api/webhooks/...&#10;..."></textarea>
+        </div>
+
+        <!-- Send Count -->
+        <div class="form-group">
+            <label for="sendCount">Send Count:</label>
+            <input type="number" id="sendCount" value="1" min="1" max="1000" />
+        </div>
+
+        <!-- Message Format Selection -->
+        <div class="form-group">
+            <label>Message Format:</label>
+            <div class="format-selector">
+                <button class="format-option active" data-format="text">Normal</button>
+                <button class="format-option" data-format="embed">Embed</button>
+            </div>
+        </div>
+
+        <!-- Normal Message Content -->
+        <div class="form-group" id="textMessageGroup">
+            <label for="message">Message:</label>
+            <textarea id="message" rows="6" placeholder="Send your message here..."></textarea>
+        </div>
+
+        <!-- Embed Fields (Hidden by default) -->
+        <div id="embedFieldsGroup" style="display: none;">
+            <div class="form-group">
+                <label for="embedTitle">Embed Title:</label>
+                <input type="text" id="embedTitle" placeholder="Enter embed title..." />
+            </div>
+
+            <div class="form-group">
+                <label for="embedDescription">Message Content (optional):</label>
+                <textarea id="embedDescription" rows="4" placeholder="Enter message content..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="embedColor">Embed Color (default: red):</label>
+                <input type="text" id="embedColor" placeholder="HEX: #FF0000 or Decimal: 16711680" value="#FF0000" />
+            </div>
+        </div>
+
+        <!-- Interval -->
+        <div class="form-group">
+            <label for="interval">Send Interval (ms):</label>
+            <input type="number" id="interval" value="1000" min="100" />
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="button-group">
+            <button id="startBtn">▶ Send</button>
+            <button id="stopBtn" disabled>⏹ Stop</button>
+        </div>
+        
+        <!-- Logs -->
+        <div id="logs"></div>
+    </div>
+
+    <script>
+        let webhooks = [];
+        let currentFormat = 'text';
+        let sendIntervalId = null;
+        let isSending = false;
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const logsDiv = document.getElementById('logs');
+        const formatOptions = document.querySelectorAll('.format-option');
+        const webhookInput = document.getElementById('webhookInput');
+
+        // Format selection
+        formatOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                formatOptions.forEach(opt => opt.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFormat = e.target.dataset.format;
+                updateMessageFields();
+                log(`Format changed to: ${currentFormat.toUpperCase()}`, false, 'info');
+            });
+        });
+
+        function updateMessageFields() {
+            const textMessageGroup = document.getElementById('textMessageGroup');
+            const embedFieldsGroup = document.getElementById('embedFieldsGroup');
+            
+            if (currentFormat === 'text') {
+                textMessageGroup.style.display = 'block';
+                embedFieldsGroup.style.display = 'none';
+            } else {
+                textMessageGroup.style.display = 'none';
+                embedFieldsGroup.style.display = 'block';
+            }
+        }
+
+        function log(msg, isSuccess = false, type = 'error') {
+            const now = new Date().toLocaleTimeString();
+            const logLine = document.createElement('div');
+            logLine.textContent = `[${now}] ${msg}`;
+            
+            if (type === 'info') {
+                logLine.className = 'info';
+            } else {
+                logLine.className = isSuccess ? 'success' : 'error';
+            }
+            
+            logLine.style.animation = 'fadeIn 0.3s ease-out forwards';
+            logsDiv.appendChild(logLine);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        async function sendWebhook(url, payload) {
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok || res.status === 204) {
+                    const shortUrl = url.split('/').slice(-2).join('/');
+                    log(`✓ Sent to ${shortUrl}`, true);
+                    return true;
+                } else if (res.status === 429) {
+                    log(`⚠ Rate limited (429)`, false);
+                    return false;
+                } else {
+                    log(`✗ Error: Status ${res.status}`, false);
+                    return false;
+                }
+            } catch (err) {
+                log(`✗ ${err.message}`, false);
+                return false;
+            }
+        }
+
+        startBtn.addEventListener('click', () => {
+            // Get webhooks from textarea
+            const webhooks = webhookInput.value
+                .split('\n')
+                .map(url => url.trim())
+                .filter(url => url.length > 0);
+
+            if (webhooks.length === 0) {
+                alert('⚠ Add at least one webhook');
+                return;
+            }
+
+            const sendCount = parseInt(document.getElementById('sendCount').value, 10);
+            const intervalMs = parseInt(document.getElementById('interval').value, 10);
+
+            if (isNaN(sendCount) || sendCount < 1) {
+                alert('⚠ Send count must be 1 or more');
+                return;
+            }
+
+            if (isNaN(intervalMs) || intervalMs < 100) {
+                alert('⚠ Interval must be 100ms or more');
+                return;
+            }
+
+            let payload;
+
+            if (currentFormat === 'text') {
+                const message = document.getElementById('message').value;
+                if (!message) {
+                    alert('⚠ Enter a message');
+                    return;
+                }
+                payload = { content: message };
+            } else {
+                const embedTitle = document.getElementById('embedTitle').value.trim();
+                const embedDescription = document.getElementById('embedDescription').value.trim();
+                const embedColorInput = document.getElementById('embedColor').value.trim() || '#FF0000';
+
+                if (!embedTitle) {
+                    alert('⚠ Enter embed title');
+                    return;
+                }
+
+                // Color conversion
+                let color = 16711680; // Default red in decimal
+                
+                if (embedColorInput.startsWith('#')) {
+                    // Convert HEX to decimal
+                    const hex = embedColorInput.replace('#', '');
+                    if (/^[0-9A-F]{6}$/i.test(hex)) {
+                        color = parseInt(hex, 16);
+                    } else {
+                        alert('⚠ Invalid HEX color format. Use #RRGGBB');
+                        return;
+                    }
+                } else if (/^\d+$/.test(embedColorInput)) {
+                    // Decimal color
+                    color = parseInt(embedColorInput, 10);
+                    if (color < 0 || color > 16777215) {
+                        alert('⚠ Decimal color must be between 0 and 16777215');
+                        return;
+                    }
+                } else {
+                    alert('⚠ Invalid color format. Use HEX (#RRGGBB) or Decimal');
+                    return;
+                }
+
+                const embed = {
+                    title: embedTitle,
+                    color: color
+                };
+
+                if (embedDescription) {
+                    embed.description = embedDescription;
+                }
+
+                payload = { embeds: [embed] };
+            }
+
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            isSending = true;
+
+            log(`⚡ Starting to send ${sendCount} message(s) to ${webhooks.length} webhook(s)...`, true);
+
+            let sendCounter = 0;
+
+            const sendLoop = setInterval(async () => {
+                if (!isSending) {
+                    clearInterval(sendLoop);
+                    return;
+                }
+
+                sendCounter++;
+                log(`Sending batch #${sendCounter}/${sendCount}...`, false, 'info');
+
+                for (const webhook of webhooks) {
+                    await sendWebhook(webhook, payload);
+                }
+
+                if (sendCounter >= sendCount) {
+                    clearInterval(sendLoop);
+                    isSending = false;
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    log(`✓ Completed sending ${sendCount} batch(es)`, true);
+                }
+            }, intervalMs);
+        });
+
+        stopBtn.addEventListener('click', () => {
+            isSending = false;
+            log('⏹ Sending stopped', true);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        });
+
+        updateMessageFields();
+
+        // Create falling sakura petals
+        function createSakura() {
+            const sakura = document.createElement('div');
+            sakura.style.position = 'fixed';
+            sakura.style.left = Math.random() * 100 + '%';
+            sakura.style.top = '-30px';
+            sakura.style.width = '20px';
+            sakura.style.height = '20px';
+            sakura.style.background = 'radial-gradient(circle at 30% 30%, rgba(255, 192, 203, 0.8), rgba(255, 182, 193, 0.4))';
+            sakura.style.borderRadius = '50% 0 50% 50%';
+            sakura.style.pointerEvents = 'none';
+            sakura.style.zIndex = '1';
+            sakura.style.boxShadow = '0 2px 4px rgba(244, 143, 177, 0.3)';
+            
+            const startX = parseFloat(sakura.style.left);
+            const duration = 8000 + Math.random() * 4000;
+            const offsetX = -300 - Math.random() * 200;
+            
+            sakura.animate([
+                {
+                    transform: 'translateX(0) translateY(-30px) rotate(0deg)',
+                    opacity: 1
+                },
+                {
+                    transform: `translateX(${offsetX}px) translateY(800px) rotate(${720 + Math.random() * 360}deg)`,
+                    opacity: 0
+                }
+            ], {
+                duration: duration,
+                easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            });
+            
+            document.body.appendChild(sakura);
+            
+            setTimeout(() => sakura.remove(), duration);
+        }
+        
+        // Generate sakura petals continuously
+        setInterval(createSakura, 300);
+        
+        // Create initial sakura
+        for (let i = 0; i < 5; i++) {
+            setTimeout(createSakura, i * 200);
+        }
+    </script>
+</body>
+</html>
